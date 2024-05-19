@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Counter;
 use App\Models\Customer;
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use App\Models\Product;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -24,9 +25,10 @@ class DatabaseSeeder extends Seeder
 //            'email' => 'test@example.com',
 //        ]);
 
-//        Counter::factory(1)->create();
-//        Product::factory(5)->create();
-//        Customer::factory(50)->create();
-        Invoice::factory(100)->create();
+        Counter::factory(1)->create();
+        Product::factory(20)->create();
+        Customer::factory(20)->create();
+        Invoice::factory(20)->create();
+        InvoiceItem::factory(20)->create();
     }
 }
