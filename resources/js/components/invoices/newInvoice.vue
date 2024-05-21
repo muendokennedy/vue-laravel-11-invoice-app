@@ -35,7 +35,7 @@ const addCart = (item) => {
         item_code: item.item_code,
         description: item.description,
         unit_price: item.unit_price,
-        quantity: item.quantity
+        quantity: form.value.items[0].quantity
     }
 
     listCart.value.push(itemCart);
@@ -53,6 +53,19 @@ const getProducts = async () => {
 
 const removeItem = (id) => {
     listCart.value = listCart.value.filter(item => item.id !== id);
+}
+
+const subTotal = () => {
+    let total = 0;
+    listCart.value.map((data) => {
+        total = total + (data.quantity * data.unit_price);
+    })
+
+    return total;
+}
+
+const grandTotal = () => {
+    return subTotal() - form.value.discount;
 }
 
 </script>
@@ -136,15 +149,15 @@ const removeItem = (id) => {
                         <div>
                             <div class="table__footer--subtotal">
                                 <p>Sub Total</p>
-                                <span>$ 1000</span>
+                                <span>$ {{ subTotal()}}</span>
                             </div>
                             <div class="table__footer--discount">
                                 <p>Discount</p>
-                                <input type="text" class="input">
+                                <input type="text" class="input" v-model="form.discount">
                             </div>
                             <div class="table__footer--total">
                                 <p>Grand Total</p>
-                                <span>$ 1200</span>
+                                <span>$ {{ grandTotal()}}</span>
                             </div>
                         </div>
                     </div>
