@@ -1,4 +1,59 @@
 <script setup>
+import {ref, onMounted} from "vue";
+import axios from "axios";
+
+const form = ref([]);
+const allCustomers = ref([]);
+let customer_id = ref([]);
+let item = ref([]);
+let listCart = ref([]);
+const showModal = ref(false);
+let listProducts = ref([]);
+
+
+onMounted(async () => {
+    await indexForm();
+    await getAllCustomers();
+    await getProducts();
+})
+
+
+const indexForm = async () => {
+    const response = await axios.get('/api/create_invoice');
+    form.value = response.data;
+}
+
+const getAllCustomers = async () => {
+    const response = await axios.get('/api/customers');
+
+    allCustomers.value = response.data.customers;
+}
+
+const addCart = (item) => {
+    const itemCart = {
+        id: item.id,
+        item_code: item.item_code,
+        description: item.description,
+        unit_price: item.unit_price,
+        quantity: item.quantity
+    }
+
+    listCart.value.push(itemCart);
+    toggleModal();
+}
+
+const toggleModal = () => {
+    showModal.value = !showModal.value;
+}
+
+const getProducts = async () => {
+    let response = await axios.get('/api/products');
+    listProducts.value = response.data.products;
+}
+
+const removeItem = (id) => {
+    listCart.value = listCart.value.filter(item => item.id !== id);
+}
 
 </script>
 
@@ -20,21 +75,24 @@
                     <div class="card__content--header">
                         <div>
                             <p class="my-1">Customer</p>
-                            <select name="" id="" class="input">
-                                <option value="">cust 1</option>
+                            <select name="" id="" class="input" v-model="customer_id">
+                                <option disabled>Select Customer</option>
+                                <option v-for="(customer, index) in allCustomers" :key="index" :value="customer.id">
+                                    {{ customer.firstname }}
+                                </option>
                             </select>
                         </div>
                         <div>
                             <p class="my-1">Date</p>
-                            <input id="date" placeholder="dd-mm-yyyy" type="date" class="input"> <!---->
+                            <input id="date" placeholder="dd-mm-yyyy" type="date" class="input" v-model="form.date"> <!---->
                             <p class="my-1">Due Date</p>
-                            <input id="due_date" type="date" class="input">
+                            <input id="due_date" type="date" class="input" v-model="form.due_date">
                         </div>
                         <div>
                             <p class="my-1">Numero</p>
-                            <input type="text" class="input">
+                            <input type="text" class="input" v-model="form.number">
                             <p class="my-1">Reference(Optional)</p>
-                            <input type="text" class="input">
+                            <input type="text" class="input" v-model="form.reference">
                         </div>
                     </div>
                     <br><br>
@@ -49,30 +107,31 @@
                         </div>
 
                         <!-- item 1 -->
-                        <div class="table--items2">
-                            <p>#093654 vjxhchkvhxc vkxckvjkxc jkvjxckvjkx </p>
+                        <div class="table--items2" v-for="(itemCart, index) in listCart" :key="index">
+                            <p>#{{ itemCart.item_code }} {{ itemCart.description }}</p>
                             <p>
-                                <input type="text" class="input" >
+                                <input type="text" class="input" v-model="itemCart.unit_price">
                             </p>
                             <p>
-                                <input type="text" class="input" >
+                                <input type="text" class="input" v-model="itemCart.quantity">
                             </p>
-                            <p>
-                                $ 10000
+                            <p v-if="itemCart.quantity">
+                                $ {{ (itemCart.quantity) * (itemCart.unit_price) }}
                             </p>
-                            <p style="color: red; font-size: 24px;cursor: pointer;">
+                            <p v-else></p>
+                            <p style="color: red; font-size: 24px;cursor: pointer;" @click="removeItem(itemCart.id)">
                                 &times;
                             </p>
                         </div>
                         <div style="padding: 10px 30px !important;">
-                            <button class="btn btn-sm btn__open--modal">Add New Line</button>
+                            <button class="btn btn-sm btn__open--modal" @click="toggleModal">Add New Line</button>
                         </div>
                     </div>
 
                     <div class="table__footer">
                         <div class="document-footer" >
                             <p>Terms and Conditions</p>
-                            <textarea cols="50" rows="7" class="textarea" ></textarea>
+                            <textarea cols="50" rows="7" class="textarea" v-model="form.terms_and_conditions"></textarea>
                         </div>
                         <div>
                             <div class="table__footer--subtotal">
@@ -105,20 +164,23 @@
 
             </div>
             <!--==================== add modal items ====================-->
-            <div class="modal main__modal ">
+            <div class="modal main__modal " :class="{show: showModal}">
                 <div class="modal__content">
-                    <span class="modal__close btn__close--modal">×</span>
+                    <span class="modal__close btn__close--modal" @click="toggleModal">×</span>
                     <h3 class="modal__title">Add Item</h3>
                     <hr><br>
                     <div class="modal__items">
-                        <select class="input my-1">
-                            <option value="None">None</option>
-                            <option value="None">LBC Padala</option>
-                        </select>
+                        <ul style="list-style: none;">
+                            <li v-for="(product, index) in listProducts" :key="index" style="display: grid; grid-template-columns: 30px 350px 15px; align-items: center; padding-bottom: 5px;">
+                                <p>{{ index + 1}}</p>
+                                <a href="#">{{ product.item_code}} {{ product.description }}</a>
+                                <button @click="addCart(product)" style="border: 1px solid #e0e0e0; width: 35px; height: 35px; cursor: pointer;">+</button>
+                            </li>
+                        </ul>
                     </div>
                     <br><hr>
                     <div class="model__footer">
-                        <button class="btn btn-light mr-2 btn__close--modal">
+                        <button class="btn btn-light mr-2 btn__close--modal" @click="toggleModal">
                             Cancel
                         </button>
                         <button class="btn btn-light btn__close--modal ">Save</button>

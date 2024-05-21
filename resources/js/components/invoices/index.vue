@@ -13,19 +13,17 @@ onMounted(async () => {
 
 const getInvoices = async () => {
     const response = await axios.get('/api/get_all_invoices');
-     console.log(response);
     invoices.value = response.data.invoices;
 }
 
 const search = async () => {
     const response = await axios.get(`/api/search_invoice?search=${searchInvoice.value}`);
-    console.log('response', response);
     invoices.value = response.data.invoices;
 }
 
 const newInvoice = async () => {
     const form = await axios.get('/api/create_invoice');
-    await router.push('/invoice/new');
+    router.push('/invoice/new');
 }
 </script>
 
