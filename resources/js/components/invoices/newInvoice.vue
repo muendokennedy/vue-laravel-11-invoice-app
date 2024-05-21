@@ -88,7 +88,7 @@ const grandTotal = () => {
                     <div class="card__content--header">
                         <div>
                             <p class="my-1">Customer</p>
-                            <select name="" id="" class="input" v-model="customer_id">
+                            <select name="" id="" class="input" v-model="form.customer_id">
                                 <option disabled>Select Customer</option>
                                 <option v-for="(customer, index) in allCustomers" :key="index" :value="customer.id">
                                     {{ customer.firstname }}
