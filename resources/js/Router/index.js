@@ -13,6 +13,11 @@ const routes = [
         name: 'notfound',
         component: NotFound
     },
+    {
+        path: '/invoice/new',
+        name: 'newInvoice',
+        component: import('../components/invoices/newInvoice.vue')
+    }
 ]
 
 const router = createRouter({
