@@ -17,7 +17,13 @@ const routes = [
         path: '/invoice/new',
         name: 'newInvoice',
         component: import('../components/invoices/newInvoice.vue')
-    }
+    },
+    {
+        path: '/invoice/show/:id',
+        name: 'showInvoice',
+        component: import('../components/invoices/show.vue'),
+        props: true
+    },
 ]
 
 const router = createRouter({
