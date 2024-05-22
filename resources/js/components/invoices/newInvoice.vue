@@ -38,8 +38,21 @@ const addCart = (item) => {
         quantity: form.value.items[0].quantity
     }
 
-    listCart.value.push(itemCart);
-    toggleModal();
+    let existingItemId;
+
+    listCart.value.map(data => {
+        if(data.id === item.id){
+            existingItemId = item.id;
+        }
+    })
+
+    if(existingItemId !== item.id){
+        listCart.value.push(itemCart);
+        toggleModal();
+    } else{
+        alert('product already added')
+    }
+
 }
 
 const toggleModal = () => {
