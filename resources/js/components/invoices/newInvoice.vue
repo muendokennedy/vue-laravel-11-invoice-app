@@ -1,11 +1,10 @@
 <script setup>
 import {ref, onMounted} from "vue";
 import axios from "axios";
+import router from "@/Router/index.js";
 
 const form = ref([]);
 const allCustomers = ref([]);
-let customer_id = ref([]);
-let item = ref([]);
 let listCart = ref([]);
 const showModal = ref(false);
 let listProducts = ref([]);
@@ -79,6 +78,35 @@ const subTotal = () => {
 
 const grandTotal = () => {
     return subTotal() - form.value.discount;
+}
+
+const onSave = () => {
+    if(listCart.value.length >= 1){
+        let subtotal = 0;
+        subtotal = subTotal();
+        let total = 0;
+        total = grandTotal();
+
+         const formData = new FormData();
+
+         formData.append('invoice_item', JSON.stringify(listCart.value));
+         formData.append('customer_id', form.value.customer_id);
+         formData.append('date', form.value.date);
+         formData.append('due_date', form.value.due_date);
+         formData.append('number', form.value.number);
+         formData.append('reference', form.value.reference);
+         formData.append('discount', form.value.discount);
+         formData.append('subtotal', total);
+         formData.append('total', subtotal);
+         formData.append('terms_and_conditions', form.value.terms_and_conditions);
+
+         axios.post('/api/add_invoice', formData);
+
+         listCart.value = [];
+
+         router.push('/');
+
+    }
 }
 
 </script>
@@ -182,7 +210,7 @@ const grandTotal = () => {
 
                     </div>
                     <div>
-                        <a class="btn btn-secondary">
+                        <a class="btn btn-secondary" @click="onSave">
                             Save
                         </a>
                     </div>

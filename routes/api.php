@@ -15,3 +15,4 @@ Route::get('/search_invoice', [InvoiceController::class, 'searchInvoice']);
 Route::get('/create_invoice', [InvoiceController::class, 'createInvoice']);
 Route::get('/customers', [CustomerController::class, 'index']);
 Route::get('/products', [ProductController::class, 'index']);
+Route::post('/add_invoice', [InvoiceController::class, 'addInvoice']);
