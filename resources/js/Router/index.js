@@ -24,6 +24,12 @@ const routes = [
         component: import('../components/invoices/show.vue'),
         props: true
     },
+    {
+        path: '/invoice/edit/:id',
+        name: 'editInvoice',
+        component: import('../components/invoices/edit.vue'),
+        props: true,
+    }
 ]
 
 const router = createRouter({
