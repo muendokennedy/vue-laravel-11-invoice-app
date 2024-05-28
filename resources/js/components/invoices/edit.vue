@@ -44,7 +44,7 @@ const router = useRouter();
 
 const addCart = (item) => {
     const itemCart = {
-        id: item.id,
+        product_id: item.id,
         item_code: item.item_code,
         description: item.description,
         unit_price: item.unit_price,
