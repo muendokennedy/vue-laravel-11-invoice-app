@@ -73,7 +73,7 @@ class InvoiceController extends Controller
 
     public function addInvoice(Request $request)
     {
-       $invoiceItem = $request->input('invoiceItem');
+       $invoiceItem = $request->input('invoice_item');
 
        $invoiceData['sub_total'] = $request->input('subtotal');
        $invoiceData['total'] = $request->input('total');
@@ -116,11 +116,45 @@ class InvoiceController extends Controller
         ], 200);
     }
 
-    public function deleteInvoice($id)
+    public function deleteInvoice(String $id)
     {
         $invoiceItem = InvoiceItem::findOrFail($id);
 
         $invoiceItem->delete();
 
+    }
+
+    public function updateInvoice(String $id, Request $request)
+    {
+        $invoice = Invoice::where('id', $id)->first();
+
+        $invoice->sub_total = $request->subtotal;
+        $invoice->total = $request->total;
+        $invoice->customer_id = $request->customer_id;
+        $invoice->number = $request->number;
+        $invoice->date = $request->date;
+        $invoice->due_date = $request->due_date;
+        $invoice->discount = $request->discount;
+        $invoice->reference = $request->reference;
+        $invoice->terms_and_conditions = $request->terms_and_conditions;
+
+//        $invoice->update($request->all());
+
+        // I will use this instead because it makes much more sense to me
+
+        $invoice->save();
+
+        $invoiceItem = $request->input('invoice_item');
+
+        $invoice->invoice_items()->delete();
+
+        foreach (json_decode($invoiceItem) as $item){
+            $itemData['product_id'] = $item->id;
+            $itemData['invoice_id'] = $invoice->id;
+            $itemData['quantity'] = $item->quantity;
+            $itemData['unit_price'] = $item->unit_price;
+
+            InvoiceItem::create($itemData);
+        }
     }
 }

@@ -1,7 +1,7 @@
 <script setup>
 import {ref, onMounted} from "vue";
 import axios from "axios";
-import router from "@/Router/index.js";
+import { useRouter } from "vue-router";
 
 const form = ref([]);
 const allCustomers = ref([]);
@@ -21,6 +21,8 @@ const indexForm = async () => {
     const response = await axios.get('/api/create_invoice');
     form.value = response.data;
 }
+
+const router = useRouter();
 
 const getAllCustomers = async () => {
     const response = await axios.get('/api/customers');

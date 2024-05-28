@@ -1,98 +1,8 @@
 <script setup>
-// import {ref, onMounted} from "vue";
-// import axios from "axios";
-// import router from "@/Router/index.js";
-//
-// const form = ref([]);
-// const allCustomers = ref([]);
-// let listCart = ref([]);
-// const showModal = ref(false);
-// let listProducts = ref([]);
-//
-//
-// onMounted(async () => {
-//     await indexForm();
-//     await getAllCustomers();
-//     await getProducts();
-// })
-//
-//
-// const indexForm = async () => {
-//     const response = await axios.get('/api/create_invoice');
-//     form.value = response.data;
-// }
-//
 
-//
-// const addCart = (item) => {
-//     const itemCart = {
-//         id: item.id,
-//         item_code: item.item_code,
-//         description: item.description,
-//         unit_price: item.unit_price,
-//         quantity: form.value.items[0].quantity
-//     }
-//
-//     let existingItemId;
-//
-//     listCart.value.map(data => {
-//         if(data.id === item.id){
-//             existingItemId = item.id;
-//         }
-//     })
-//
-//     if(existingItemId !== item.id){
-//         listCart.value.push(itemCart);
-//         toggleModal();
-//     } else{
-//         alert('product already added')
-//     }
-//
-// }
-//
-
-//
-// const getProducts = async () => {
-//     let response = await axios.get('/api/products');
-//     listProducts.value = response.data.products;
-// }
-//
-// const removeItem = (id) => {
-//     listCart.value = listCart.value.filter(item => item.id !== id);
-// }
-//
-
-//
-// const onSave = () => {
-//     if(listCart.value.length >= 1){
-//         let subtotal = 0;
-//         subtotal = subTotal();
-//         let total = 0;
-//         total = grandTotal();
-//
-//         const formData = new FormData();
-//
-//         formData.append('invoice_item', JSON.stringify(listCart.value));
-//         formData.append('customer_id', form.value.customer_id);
-//         formData.append('date', form.value.date);
-//         formData.append('due_date', form.value.due_date);
-//         formData.append('number', form.value.number);
-//         formData.append('reference', form.value.reference);
-//         formData.append('discount', form.value.discount);
-//         formData.append('subtotal', total);
-//         formData.append('total', subtotal);
-//         formData.append('terms_and_conditions', form.value.terms_and_conditions);
-//
-//         axios.post('/api/add_invoice', formData);
-//
-//         listCart.value = [];
-//
-//         router.push('/');
-//
-//     }
-// }
 import {onMounted, ref} from "vue";
 import axios from "axios";
+import { useRouter } from "vue-router";
 
 const props = defineProps({
     id: {
@@ -104,7 +14,6 @@ const props = defineProps({
 const allCustomers = ref([]);
 
 const form = ref([]);
-let listCart = ref([]);
 const showModal = ref(false);
 let listProducts = ref([]);
 
@@ -131,13 +40,15 @@ const toggleModal = () => {
     showModal.value = !showModal.value;
 }
 
+const router = useRouter();
+
 const addCart = (item) => {
     const itemCart = {
-        product_id: item.id,
+        id: item.id,
         item_code: item.item_code,
         description: item.description,
         unit_price: item.unit_price,
-        quantity: form.value.items[0].quantity
+        quantity: item.quantity
     }
 
     let existingItemId;
@@ -166,10 +77,6 @@ const deleteInvoiceItems = (id, i) => {
     }
 }
 
-const removeItem = (id) => {
-    listCart.value = listCart.value.filter(item => item.id !== id);
-}
-
 const getProducts = async () => {
     let response = await axios.get('/api/products');
     listProducts.value = response.data.products;
@@ -177,15 +84,48 @@ const getProducts = async () => {
 
 const subTotal = () => {
     let total = 0;
-    listCart.value.map((data) => {
-        total = total + (data.quantity * data.unit_price);
-    })
+    if(form.value.invoice_items){
+        form.value.invoice_items.map((data) => {
+            total = total + (data.quantity * data.unit_price);
+        })
+    }
 
     return total;
 }
 
 const grandTotal = () => {
-    return subTotal() - form.value.discount;
+    if(form.value.invoice_items){
+        return subTotal() - form.value.discount;
+    }
+
+}
+
+const onEdit = (id) => {
+    if(form.value.invoice_items.length >= 1){
+        let subtotal = 0;
+        subtotal = subTotal();
+        let total = 0;
+        total = grandTotal();
+
+        const formData = new FormData();
+
+        formData.append('invoice_item', JSON.stringify(form.value.invoice_items));
+        formData.append('customer_id', form.value.customer_id);
+        formData.append('date', form.value.date);
+        formData.append('due_date', form.value.due_date);
+        formData.append('number', form.value.number);
+        formData.append('reference', form.value.reference);
+        formData.append('discount', form.value.discount);
+        formData.append('subtotal', total);
+        formData.append('total', subtotal);
+        formData.append('terms_and_conditions', form.value.terms_and_conditions);
+
+        axios.post(`/api/update_invoice/${form.value.id}`, formData);
+
+        form.value.invoice_items = [];
+
+        router.push('/');
+    }
 }
 
 </script>
@@ -223,7 +163,7 @@ const grandTotal = () => {
                           </div>
                           <div>
                               <p class="my-1">Numero</p>
-                              <input type="text" class="input" v-model="form.data">
+                              <input type="text" class="input" v-model="form.number">
                               <p class="my-1">Reference(Optional)</p>
                               <input type="text" class="input" v-model="form.reference">
                           </div>
@@ -243,6 +183,9 @@ const grandTotal = () => {
                           <div class="table--items2" v-for="(itemCart, index) in form.invoice_items" :key="index">
                               <p v-if="itemCart.product">
                                   #{{ itemCart.product.item_code }} {{ itemCart.product.description }}
+                              </p>
+                              <p v-else>
+                                  #{{ itemCart.item_code }} {{ itemCart.description }}
                               </p>
                               <p>
                                   <input type="text" class="input" v-model="itemCart.unit_price">
@@ -266,7 +209,7 @@ const grandTotal = () => {
                       <div class="table__footer">
                           <div class="document-footer" >
                               <p>Terms and Conditions</p>
-                              <textarea cols="50" rows="7" class="textarea" ></textarea>
+                              <textarea cols="50" rows="7" class="textarea" v-model="form.terms_and_conditions" ></textarea>
                           </div>
                           <div>
                               <div class="table__footer--subtotal">
@@ -291,7 +234,7 @@ const grandTotal = () => {
 
                       </div>
                       <div>
-                          <a class="btn btn-secondary">
+                          <a class="btn btn-secondary" @click="onEdit(form.id)">
                               Save
                           </a>
                       </div>
