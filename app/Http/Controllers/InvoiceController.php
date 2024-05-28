@@ -6,6 +6,7 @@ use App\Models\Counter;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use Illuminate\Http\Request;
+use PhpParser\Node\Scalar\String_;
 
 class InvoiceController extends Controller
 {
@@ -116,7 +117,7 @@ class InvoiceController extends Controller
         ], 200);
     }
 
-    public function deleteInvoice(String $id)
+    public function deleteInvoiceItems(String $id)
     {
         $invoiceItem = InvoiceItem::findOrFail($id);
 
@@ -156,5 +157,14 @@ class InvoiceController extends Controller
 
             InvoiceItem::create($itemData);
         }
+    }
+
+    public function deleteInvoice(String $id)
+    {
+        $invoice = Invoice::findOrFail($id);
+
+        $invoice->invoice_items()->delete();
+
+        $invoice->delete();
     }
 }
